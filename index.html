@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+
+<head>
+  <meta charset="utf-8" />
+  <title>Corrida de Carros</title>
+  <!-- Lib -->
+  <script src="./lib/p5.min.js"></script>
+  <script src="./lib/p5.dom.min.js"></script>
+  <script src="./lib/p5.sound.min.js"></script>
+  <script src="./lib/p5.play.js"></script>
+
+  <link rel="stylesheet" href="style.css" />
+
+  <!-- Firebase -->
+  <script src="https://www.gstatic.com/firebasejs/8.3.2/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.3.2/firebase-database.js"></script>
+
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyCQJFsh7QBXZSNfzDHDsmIFjTNppojQ9rY",
+      authDomain: "relampagomarquinhos-de35b.firebaseapp.com",
+      databaseURL: "https://relampagomarquinhos-de35b-default-rtdb.firebaseio.com",
+      projectId: "relampagomarquinhos-de35b",
+      storageBucket: "relampagomarquinhos-de35b.appspot.com",
+      messagingSenderId: "538799722488",
+      appId: "1:538799722488:web:7b975a0f32c0a4d783900d"
+    };
+    // Initialize Firebase
+    firebase.initializeApp(firebaseConfig);
+  </script>
+</head>
+
+<body>
+  <script src="./js/Game.js"></script>
+  <script src="./js/Form.js"></script>
+  <script src="./js/Player.js"></script>
+  <script src="./sketch.js"></script>
+</body>
+
+</html>
