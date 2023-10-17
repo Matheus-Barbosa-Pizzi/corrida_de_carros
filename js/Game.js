@@ -7,6 +7,11 @@ class Game {
 
     this.leader1 = createElement("h2");
     this.leader2 = createElement("h2");
+
+    this.playerMoving = false;
+
+    this.leftKeyActive = false;
+    this.boom = false
   }
 
   getState() {
@@ -31,10 +36,12 @@ class Game {
     car1 = createSprite(width / 2 - 50, height - 100);
     car1.addImage("car1", car1_img);
     car1.scale = 0.07;
+    car1.addImage("boom", boomImg);
 
     car2 = createSprite(width / 2 + 100, height - 100);
     car2.addImage("car2", car2_img);
     car2.scale = 0.07;
+    car2.addImage("boom", boomImg);
 
     cars = [car1, car2];
 
@@ -57,9 +64,9 @@ class Game {
       { x: width / 2 - 180, y: height - 6300, image: coneImg },
     ];
 
-    this.addSprites(fuels, 4, fuelImg, 0.2);
-    this.addSprites(coins, 18, coinImg, 0.9);
-    this.addSprites(obstacles, obstaclesPosition.length, coneImg, 0.4, obstaclesPositions);
+    this.addSprites(fuels, 4, fuelImg, 0.02);
+    this.addSprites(coins, 18, coinImg, 0.09);
+    this.addSprites(obstacles, obstaclesPositions.length, coneImg, 0.04, obstaclesPositions);
   }
 
   addSprites(spriteGroup, numberOfSprites, spriteImage, scale, positions = []) {
@@ -71,7 +78,7 @@ class Game {
 
         x = positions[i].x;
         y = positions[i].y;
-        spriteImage = position[i].image;
+        spriteImage = positions[i].image;
       } else {
 
         x = random(width / 2 + 150, width / 2 - 150);
@@ -115,16 +122,27 @@ class Game {
 
     Player.getPlayersInfo();
 
+    player.getCarsAtEnd();
+
     if (allPlayers !== undefined) {
       image(track, 0, -height * 5, width, height * 6);
 
       this.showLeaderboard();
+      this.showFuel();
+      this.showLife();
 
       //índice da matriz
       var index = 0;
       for (var plr in allPlayers) {
         //adicione 1 ao índice para cada loop
         index = index + 1;
+
+        var currentlife = allPlayers[plr].life;
+        if (currentlife<=0) {
+          
+          cars[index-1].changeImage("boom");
+          cars[index-1].scale = 0.3;
+        }
 
         //use os dados do banco de dados para exibir os carros nas direções x e y
         var x = allPlayers[plr].positionX;
@@ -148,6 +166,16 @@ class Game {
       // manipulando eventos de teclado
       this.handlePlayerControls();
 
+      const finishLine = height * 6 - 100;
+      if (player.positionY > finishLine) {
+
+        gameState = 2;
+        player.rank += 1;
+        Player.updateCarsAtEnd(player.rank);
+        player.update();
+        this.showRank();
+      }
+
       drawSprites();
     }
   }
@@ -166,6 +194,30 @@ class Game {
 
       window.location.reload();
     })
+  }
+
+  showLife() {
+
+    push();
+    image(lifeImg, width / 2 - 130, height - player.positionY - 350, 20, 20);
+    fill("white");
+    rect(width / 2 - 100, height - player.positionY - 350, 185, 20);
+    fill("#f50057");
+    rect(width / 2 - 100, height - player.positionY - 350, player.life, 20);
+    noStroke();
+    pop()
+  }
+
+  showFuel() {
+
+    push();
+    image(fuelImg, width / 2 - 130, height - player.positionY - 300, 20, 20);
+    fill("white");
+    rect(width / 2 - 100, height - player.positionY - 300, 185, 20);
+    fill("#f50057");
+    rect(width / 2 - 100, height - player.positionY - 300, player.life, 20);
+    noStroke();
+    pop()
   }
 
   showLeaderboard() {
@@ -213,6 +265,7 @@ class Game {
 
   handlePlayerControls() {
     if (keyIsDown(UP_ARROW)) {
+      this.playerMoving = true;
       player.positionY += 10;
       player.update();
     }
@@ -230,21 +283,60 @@ class Game {
 
   handleFuel(index) {
 
-    cars[index-1].overlap(fuels, function(collector, collected)) {
+    cars[index - 1].overlap(fuels, function (collector, collected) {
 
       player.fuel = 185;
       collected.remove();
+    });
+
+    if (player.fuel>0 && this.playerMoving) {
+
+      player.fuel -=0.3;
+    }
+
+    if (player.fuel<=0) {
+
+      gameState = 2;
+      this.gameOver();
     }
   }
 
   handleCoin(index) {
 
-    cars[index-1].overlap(coins, function(collector, collected)) {
+    cars[index - 1].overlap(coins, function (collector, collected) {
 
-      player.coin += 5;
+      player.score += 5;
       player.update();
       collected.remove();
-    }
+    });
+  }
+
+  handleObstaclesCollision(index) {
+
+    
+  }
+
+  showRank() {
+    swal({
+      //title: Incrível!${"\n"}Rank${"\n"}${player.rank},
+      title: `Incrível!${"\n"}${player.rank}º lugar`,
+      text: "Você alcançou a linha de chegada com sucesso!",
+      imageUrl:
+        "https://raw.githubusercontent.com/vishalgaddam873/p5-multiplayer-car-race-game/master/assets/cup.png",
+      imageSize: "100x100",
+      confirmButtonText: "Ok"
+    });
+  }
+
+  gameOver() {
+    swal({
+      title: `Fim de Jogo`,
+      text: "Oops você perdeu a corrida!",
+      imageUrl:
+        "https://cdn.shopify.com/s/files/1/1061/1924/products/Thumbs_Down_Sign_Emoji_Icon_ios10_grande.png",
+      imageSize: "100x100",
+      confirmButtonText: "Obrigado por jogar"
+    });
   }
 }
 
